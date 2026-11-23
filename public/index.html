@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OTP Manager — Authenticator</title>
+  <meta name="description" content="Kelola kode OTP dua faktor Anda dengan aman di Cloudflare Workers." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <div id="loadingView" class="loading">
+    <div class="spinner"></div>
+    <p class="muted">Memuat sesi...</p>
+  </div>
+  <div id="loginView" class="view hidden">
+    <div class="login-shell">
+      <div class="login-card">
+        <div class="brand">
+          <span class="brand-mark">OTP</span>
+          <span class="brand-name">Manager</span>
+        </div>
+        <h1>Masuk</h1>
+        <p class="muted">Kelola kode autentikasi dua faktor Anda.</p>
+        <form id="loginForm">
+          <label for="password">Password</label>
+          <input type="password" id="password" autocomplete="current-password" required placeholder="••••••••" />
+          <button type="submit" class="btn-primary">Masuk ke Dashboard</button>
+          <p id="loginError" class="error"></p>
+        </form>
+      </div>
+      <p class="login-foot muted">Dilindungi dengan sesi terenkripsi · Cloudflare Workers</p>
+    </div>
+  </div>
+
+  <div id="dashView" class="view hidden">
+    <header class="topbar">
+      <div class="topbar-left">
+        <span class="brand-mark small">OTP</span>
+        <h1>Manager</h1>
+        <span class="count-pill" id="countPill">0 akun</span>
+      </div>
+      <div class="topbar-right">
+        <input type="search" id="searchInput" placeholder="Cari akun..." class="search" />
+        <div class="cat-filter" id="catFilter">
+          <button id="categoryFilterBtn" class="search cat-filter-btn" type="button">
+            <span id="categoryFilterLabel">Semua kategori</span>
+            <svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div id="categoryFilterMenu" class="cat-filter-menu hidden"></div>
+        </div>
+        <button id="themeBtn" class="btn-ghost" aria-label="Ganti tema">◐</button>
+        <button id="lockBtn" class="btn-ghost">Kunci</button>
+        <button id="importBtn" class="btn-ghost">Import</button>
+        <button id="exportBtn" class="btn-ghost">Export</button>
+        <button id="addBtn" class="btn-primary">+ Tambah</button>
+        <button id="logoutBtn" class="btn-ghost">Keluar</button>
+      </div>
+    </header>
+
+    <main class="container">
+      <div id="empty" class="empty hidden">
+        <div class="empty-icon">🔐</div>
+        <h2>Belum ada akun OTP</h2>
+        <p class="muted">Tambahkan akun secara manual atau import dari file authenticator.</p>
+        <div class="empty-actions">
+          <button id="emptyAdd" class="btn-primary">+ Tambah Akun</button>
+          <button id="emptyImport" class="btn-ghost">Import File</button>
+        </div>
+      </div>
+      <div id="entries" class="grid"></div>
+    </main>
+  </div>
+
+  <!-- Add modal -->
+  <div id="addModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2>Tambah Akun OTP</h2>
+        <button class="icon-btn" data-close aria-label="Tutup">×</button>
+      </div>
+      <form id="addForm">
+        <label for="otpauthInput">otpauth:// URI</label>
+        <textarea id="otpauthInput" rows="3" placeholder="otpauth://totp/GitHub:you?secret=...&issuer=GitHub"></textarea>
+        <p class="hint">Atau isi manual di bawah ini.</p>
+        <div class="form-grid">
+          <div>
+            <label for="nameInput">Nama Akun</label>
+            <input id="nameInput" placeholder="arv-fazriansyah" />
+          </div>
+          <div>
+            <label for="issuerInput">Penerbit</label>
+            <input id="issuerInput" placeholder="GitHub" />
+          </div>
+        </div>
+        <label for="secretInput">Secret (Base32)</label>
+        <input id="secretInput" placeholder="JBSWY3DPEHPK3PXP" class="mono" />
+        <div class="form-grid three">
+          <div>
+            <label for="algoInput">Algoritma</label>
+            <select id="algoInput">
+              <option>SHA-1</option>
+              <option>SHA-256</option>
+              <option>SHA-512</option>
+            </select>
+          </div>
+          <div>
+            <label for="digitsInput">Digit</label>
+            <input id="digitsInput" type="number" value="6" min="6" max="8" />
+          </div>
+          <div>
+            <label for="periodInput">Periode (s)</label>
+            <input id="periodInput" type="number" value="30" min="15" max="60" />
+          </div>
+        </div>
+        <label for="categoryInput">Kategori/Tag</label>
+        <input id="categoryInput" placeholder="Work, Personal, Bank..." />
+        <label style="display:flex;align-items:center;gap:8px;margin:10px 0 0">
+          <input type="checkbox" id="pinnedInput" style="width:auto" /> Pin (favorit)
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" data-close>Batal</button>
+          <button type="submit" class="btn-primary">Simpan Akun</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Import modal -->
+  <div id="importModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2>Import Akun</h2>
+        <button class="icon-btn" data-close aria-label="Tutup">×</button>
+      </div>
+      <p class="muted">Tempel baris <code>otpauth://</code> atau unggah file <code>authenticator.txt</code>.</p>
+      <textarea id="importText" rows="9" placeholder="otpauth://totp/..."></textarea>
+      <div class="file-row">
+        <label for="importFile" class="btn-ghost file-btn">Pilih File</label>
+        <input type="file" id="importFile" accept=".txt,.json" hidden />
+        <span id="importFileName" class="muted"></span>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" data-close>Batal</button>
+        <button type="button" id="importDo" class="btn-primary">Import Sekarang</button>
+      </div>
+      <p id="importStatus" class="status"></p>
+    </div>
+  </div>
+
+  <!-- Confirm modal -->
+  <div id="confirmModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" data-close-confirm></div>
+    <div class="modal-card" style="max-width:380px">
+      <div class="modal-head">
+        <h2 id="confirmTitle">Hapus Akun?</h2>
+        <button class="icon-btn" data-close-confirm aria-label="Tutup">×</button>
+      </div>
+      <p id="confirmMsg" class="muted">Akun ini akan dihapus permanen.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" data-close-confirm>Batal</button>
+        <button type="button" id="confirmOk" class="btn-primary" style="background:var(--danger);border-color:var(--danger)">Hapus</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

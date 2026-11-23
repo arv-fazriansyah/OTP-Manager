@@ -1,0 +1,17 @@
+# Secrets / env
+.env
+.env.*
+!.env.example
+
+# Wrangler
+.wrangler/
+node_modules/
+dist/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+.dev.vars

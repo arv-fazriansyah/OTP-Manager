@@ -1,0 +1,19 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "otp-manager",
+  "main": "src/index.js",
+  "compatibility_date": "2026-01-01",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+  "kv_namespaces": [
+    {
+      "binding": "OTP_KV",
+      "id": "42b17136ee88459e920d77c136187f7b"
+    }
+  ],
+  "vars": {
+    "KV_KEY": "otp:entries"
+  }
+}
