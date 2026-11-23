@@ -4,6 +4,14 @@ Manajer kode OTP (TOTP) dua faktor berbasis **Cloudflare Workers** + **Cloudflar
 
 **Production:** https://otp-manager.arvib-fazriansyah.workers.dev
 
+## Screenshot
+
+### Login
+![Login](docs/screenshots/login.png)
+
+### Dashboard
+![Dashboard](docs/screenshots/dashboard.png)
+
 ## Fitur
 
 - Login dengan password (disimpan sebagai Worker secret)
