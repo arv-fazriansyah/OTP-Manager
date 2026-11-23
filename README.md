@@ -10,7 +10,9 @@ Manajer kode OTP (TOTP) dua faktor berbasis **Cloudflare Workers** + **Cloudflar
 ![Login](docs/screenshots/login.png)
 
 ### Dashboard
-![Dashboard](docs/screenshots/dashboard.png)
+![Dashboard](docs/screenshots/dashboard-clean.png)
+
+> Data akun pada screenshot sudah disensor untuk privasi.
 
 ## Fitur
 
