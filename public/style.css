@@ -421,12 +421,57 @@ textarea { resize: vertical; min-height: 72px; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
 .file-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
 
+/* Overflow menu (mobile only) */
+.more-wrap { position: relative; display: none; }
+.more-btn { font-size: 18px; line-height: 1; padding: 8px 10px; }
+.more-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 140px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  z-index: 60;
+}
+.more-item {
+  display: block;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  text-align: left;
+}
+.more-item:hover { background: var(--surface-2); }
+
 /* Responsive */
 @media (max-width: 640px) {
-  .topbar { padding: 12px 16px; }
-  .container { padding: 16px; }
-  .search { width: 100%; }
-  .topbar-right { width: 100%; }
+  .topbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px 8px;
+    padding: 10px 14px;
+  }
+  .topbar-left { grid-column: 1 / 2; grid-row: 1; gap: 8px; min-width: 0; }
+  .topbar-left h1 { font-size: 17px; }
+  .topbar-right { display: contents; }
+  .more-wrap { display: block; grid-column: 2 / 3; grid-row: 1; justify-self: end; }
+  #searchInput { grid-column: 1 / -1; grid-row: 2; width: 100%; }
+  .cat-filter { grid-column: 1 / 2; grid-row: 3; min-width: 0; }
+  .cat-filter-btn { width: 100%; }
+  #addBtn { grid-column: 2 / 3; grid-row: 3; white-space: nowrap; }
+  #themeBtn, #lockBtn, #importBtn, #exportBtn, #logoutBtn { display: none; }
+  .topbar .btn-ghost, .topbar .btn-primary { padding: 9px 12px; }
+  .container { padding: 14px 14px 40px; }
+  .grid { gap: 12px; }
+  .otp-card { padding: 16px; }
+  .search { font-size: 16px; }
   .form-grid, .form-grid.three { grid-template-columns: 1fr; }
   .code { font-size: 28px; letter-spacing: 4px; }
 }

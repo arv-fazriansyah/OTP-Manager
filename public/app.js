@@ -301,6 +301,41 @@ function updateCategoryFilter() {
   $('#categoryFilterLabel').textContent = categoryFilterValue || 'Semua kategori';
 }
 
+/* ---------- Overflow menu (mobile) ---------- */
+const moreBtn = $('#moreBtn');
+const moreMenu = $('#moreMenu');
+function closeMoreMenu() {
+  if (!moreMenu) return;
+  moreMenu.classList.add('hidden');
+  moreBtn.setAttribute('aria-expanded', 'false');
+}
+if (moreBtn && moreMenu) {
+  moreBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isHidden = moreMenu.classList.toggle('hidden');
+    moreBtn.setAttribute('aria-expanded', String(!isHidden));
+  });
+  moreMenu.addEventListener('click', (e) => {
+    const item = e.target.closest('[data-more]');
+    if (!item) return;
+    closeMoreMenu();
+    const targets = {
+      lock: '#lockBtn',
+      theme: '#themeBtn',
+      import: '#importBtn',
+      export: '#exportBtn',
+      logout: '#logoutBtn',
+    };
+    $(targets[item.dataset.more])?.click();
+  });
+  document.addEventListener('click', (e) => {
+    if (!moreMenu.classList.contains('hidden') && !moreMenu.contains(e.target) && e.target !== moreBtn) closeMoreMenu();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeMoreMenu();
+  });
+}
+
 /* ---------- Add modal ---------- */
 function openModal(id) { $(id).classList.remove('hidden'); }
 function closeModal(id) { $(id).classList.add('hidden'); }
