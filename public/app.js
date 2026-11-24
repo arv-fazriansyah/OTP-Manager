@@ -657,6 +657,7 @@ async function handleMigrationValue(value) {
   }
 }
 async function decodeFrame(source, width, height) {
+  if (!width || !height) return '';
   if (scanDetector) {
     try {
       const codes = await scanDetector.detect(source);
@@ -679,6 +680,7 @@ async function decodeImageFile(file) {
   if (typeof window.jsQR !== 'function') return '';
   const bitmap = await createImageBitmap(file);
   try {
+    if (!bitmap.width || !bitmap.height) return '';
     scanCanvas.width = bitmap.width;
     scanCanvas.height = bitmap.height;
     scanCtx.drawImage(bitmap, 0, 0);
