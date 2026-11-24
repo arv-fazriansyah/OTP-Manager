@@ -58,22 +58,24 @@
         <button id="lockBtn" class="btn-ghost">Kunci</button>
         <button id="importBtn" class="btn-ghost">Import</button>
         <button id="exportBtn" class="btn-ghost">Export</button>
-        <button id="scanBtn" class="btn-ghost scan-btn" aria-label="Scan QR">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-          <span class="scan-label">Scan QR</span>
-        </button>
-        <button id="addBtn" class="btn-primary">+ Tambah</button>
-        <button id="logoutBtn" class="btn-ghost">Keluar</button>
-        <div class="more-wrap">
-          <button id="moreBtn" class="btn-ghost more-btn" type="button" aria-label="Menu lainnya" aria-haspopup="true" aria-expanded="false">⋯</button>
-          <div id="moreMenu" class="more-menu hidden" role="menu">
-            <button class="more-item" type="button" role="menuitem" data-more="lock">Kunci</button>
-            <button class="more-item" type="button" role="menuitem" data-more="theme">Ganti tema</button>
-            <button class="more-item" type="button" role="menuitem" data-more="import">Import</button>
-            <button class="more-item" type="button" role="menuitem" data-more="export">Export</button>
-            <button class="more-item" type="button" role="menuitem" data-more="logout">Keluar</button>
+        <div class="topbar-icons">
+          <button id="scanBtn" class="btn-ghost scan-btn" aria-label="Scan QR">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <span class="scan-label">Scan QR</span>
+          </button>
+          <div class="more-wrap">
+            <button id="moreBtn" class="btn-ghost more-btn" type="button" aria-label="Menu lainnya" aria-haspopup="true" aria-expanded="false">⋯</button>
+            <div id="moreMenu" class="more-menu hidden" role="menu">
+              <button class="more-item" type="button" role="menuitem" data-more="lock">Kunci</button>
+              <button class="more-item" type="button" role="menuitem" data-more="theme">Ganti tema</button>
+              <button class="more-item" type="button" role="menuitem" data-more="import">Import</button>
+              <button class="more-item" type="button" role="menuitem" data-more="export">Export</button>
+              <button class="more-item" type="button" role="menuitem" data-more="logout">Keluar</button>
+            </div>
           </div>
         </div>
+        <button id="addBtn" class="btn-primary">+ Tambah</button>
+        <button id="logoutBtn" class="btn-ghost">Keluar</button>
       </div>
     </header>
 
