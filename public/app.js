@@ -111,6 +111,7 @@ $('#loginForm').addEventListener('submit', async (e) => {
 });
 
 $('#logoutBtn').addEventListener('click', async () => {
+  closeScanModal();
   await api('/api/logout', { method: 'POST' }).catch(() => {});
   stopTimer();
   showView('login');
@@ -473,8 +474,206 @@ $('#importDo').addEventListener('click', async () => {
   }
 });
 
+/* ---------- Scan QR ---------- */
+let scanDetector = null;
+let scanStream = null;
+let scanRaf = null;
+let scanActive = false;
+let scanSupported = false;
+let scanLastDecode = 0;
+let scanSession = 0;
+const scanCanvas = document.createElement('canvas');
+const scanCtx = scanCanvas.getContext('2d', { willReadFrequently: true });
+
+(async function initScanDetector() {
+  // jsQR adalah fallback lintas-browser; BarcodeDetector dipakai jika tersedia.
+  if (typeof window.jsQR === 'function') scanSupported = true;
+  if (!('BarcodeDetector' in window)) return;
+  try {
+    const formats = await window.BarcodeDetector.getSupportedFormats();
+    if (!formats.includes('qr_code')) return;
+    scanDetector = new window.BarcodeDetector({ formats: ['qr_code'] });
+    scanSupported = true;
+  } catch { /* tetap pakai jsQR */ }
+})();
+
+function setScanStatus(msg) {
+  const el = $('#scanStatus');
+  if (el) el.textContent = msg;
+}
+function stopScan() {
+  scanActive = false;
+  scanSession++;
+  if (scanRaf) { cancelAnimationFrame(scanRaf); scanRaf = null; }
+  if (scanStream) {
+    scanStream.getTracks().forEach(t => t.stop());
+    scanStream = null;
+  }
+  const video = $('#scanVideo');
+  if (video) {
+    try { video.pause(); } catch {}
+    video.srcObject = null;
+  }
+  $('#scanModal')?.querySelector('.scan-stage')?.classList.remove('active');
+}
+function closeScanModal() {
+  stopScan();
+  closeModal('#scanModal');
+}
+function openScanModal() {
+  if (!scanSupported) {
+    toast('Browser ini belum mendukung scan QR. Gunakan input manual atau import.', 'error');
+    return;
+  }
+  setScanStatus('Tekan "Mulai Kamera" atau unggah gambar QR.');
+  openModal('#scanModal');
+}
+function decodeCanvas(imageData) {
+  if (typeof window.jsQR !== 'function') return '';
+  try {
+    const result = window.jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
+    return result?.data || '';
+  } catch {
+    return '';
+  }
+}
+async function decodeFrame(source, width, height) {
+  if (scanDetector) {
+    try {
+      const codes = await scanDetector.detect(source);
+      if (codes.length) return codes[0].rawValue || '';
+    } catch { /* lanjut ke jsQR */ }
+  }
+  if (typeof window.jsQR !== 'function') return '';
+  scanCanvas.width = width;
+  scanCanvas.height = height;
+  scanCtx.drawImage(source, 0, 0, width, height);
+  return decodeCanvas(scanCtx.getImageData(0, 0, width, height));
+}
+async function decodeImageFile(file) {
+  if (scanDetector) {
+    try {
+      const codes = await scanDetector.detect(file);
+      if (codes.length) return codes[0].rawValue || '';
+    } catch { /* lanjut ke jsQR */ }
+  }
+  if (typeof window.jsQR !== 'function') return '';
+  const bitmap = await createImageBitmap(file);
+  try {
+    scanCanvas.width = bitmap.width;
+    scanCanvas.height = bitmap.height;
+    scanCtx.drawImage(bitmap, 0, 0);
+    return decodeCanvas(scanCtx.getImageData(0, 0, bitmap.width, bitmap.height));
+  } finally {
+    bitmap.close?.();
+  }
+}
+async function startScan() {
+  if (!scanSupported) {
+    toast('Browser ini belum mendukung scan QR', 'error');
+    return;
+  }
+  if (!navigator.mediaDevices?.getUserMedia) {
+    toast('Kamera tidak tersedia di perangkat ini', 'error');
+    return;
+  }
+  stopScan();
+  const session = scanSession;
+  setScanStatus('Meminta izin kamera...');
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+      audio: false,
+    });
+  } catch (err) {
+    const messages = {
+      NotAllowedError: 'Izin kamera ditolak. Aktifkan izin kamera lalu coba lagi.',
+      NotFoundError: 'Kamera tidak ditemukan.',
+      NotReadableError: 'Kamera sedang dipakai aplikasi lain.',
+      OverconstrainedError: 'Kamera tidak mendukung mode yang diminta.',
+    };
+    const msg = messages[err?.name] || 'Gagal membuka kamera.';
+    setScanStatus(msg);
+    toast(msg, 'error');
+    return;
+  }
+  if (session !== scanSession || $('#scanModal').classList.contains('hidden')) {
+    stream.getTracks().forEach(t => t.stop());
+    return;
+  }
+  scanStream = stream;
+  const video = $('#scanVideo');
+  video.srcObject = scanStream;
+  $('#scanModal').querySelector('.scan-stage').classList.add('active');
+  try { await video.play(); } catch {}
+  setScanStatus('Mencari QR code...');
+  scanActive = true;
+  scanLastDecode = 0;
+  const tick = async (ts) => {
+    if (!scanActive) return;
+    if (video.readyState >= 2 && ts - scanLastDecode > 200) {
+      scanLastDecode = ts;
+      const value = await decodeFrame(video, video.videoWidth, video.videoHeight);
+      if (value) {
+        stopScan();
+        handleScannedValue(value);
+        return;
+      }
+    }
+    scanRaf = requestAnimationFrame(tick);
+  };
+  scanRaf = requestAnimationFrame(tick);
+}
+async function scanImageFile(file) {
+  if (!scanSupported) {
+    toast('Browser ini belum mendukung scan QR', 'error');
+    return;
+  }
+  setScanStatus('Memeriksa gambar...');
+  try {
+    const value = await decodeImageFile(file);
+    if (!value) {
+      setScanStatus('QR code tidak terdeteksi pada gambar.');
+      toast('QR tidak terdeteksi', 'error');
+      return;
+    }
+    handleScannedValue(value);
+  } catch {
+    setScanStatus('Gagal membaca gambar.');
+    toast('Gagal membaca gambar', 'error');
+  }
+}
+function handleScannedValue(value) {
+  const v = String(value || '').trim();
+  if (!/^otpauth:\/\//i.test(v)) {
+    setScanStatus('QR bukan format otpauth://. Gunakan QR dari aplikasi authenticator.');
+    toast('QR bukan format otpauth://', 'error');
+    return;
+  }
+  closeScanModal();
+  resetAddModal();
+  $('#otpauthInput').value = v;
+  openModal('#addModal');
+  toast('QR terdeteksi. Periksa data lalu simpan.', 'success');
+}
+$('#scanBtn')?.addEventListener('click', openScanModal);
+$('#scanStartBtn')?.addEventListener('click', startScan);
+$('#scanStopBtn')?.addEventListener('click', stopScan);
+$('#scanFile')?.addEventListener('change', async (ev) => {
+  const file = ev.target.files?.[0];
+  if (file) await scanImageFile(file);
+  ev.target.value = '';
+});
+$$('[data-close-scan]').forEach(el => el.addEventListener('click', closeScanModal));
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !$('#scanModal').classList.contains('hidden')) closeScanModal();
+});
+window.addEventListener('pagehide', stopScan);
+
 /* ---------- Lock ---------- */
 function doLock() {
+  closeScanModal();
   api('/api/logout', { method: 'POST' }).catch(() => {});
   stopTimer();
   showView('login');

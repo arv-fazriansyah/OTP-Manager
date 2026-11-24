@@ -19,6 +19,7 @@ Manajer kode OTP (TOTP) dua faktor berbasis **Cloudflare Workers** + **Cloudflar
 - Login dengan password (disimpan sebagai Worker secret)
 - TOTP client-side (SHA-1/256/512, 6–8 digit, period 15–60s)
 - Tambah / edit / hapus akun
+- Scan QR via kamera atau unggah gambar
 - Import & export (format `otpauth://`)
 - Deduplikasi import berdasarkan secret (atau name+issuer)
 - Pin/favorit + kategori/tag + filter

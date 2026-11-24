@@ -58,6 +58,10 @@
         <button id="lockBtn" class="btn-ghost">Kunci</button>
         <button id="importBtn" class="btn-ghost">Import</button>
         <button id="exportBtn" class="btn-ghost">Export</button>
+        <button id="scanBtn" class="btn-ghost scan-btn" aria-label="Scan QR">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <span class="scan-label">Scan QR</span>
+        </button>
         <button id="addBtn" class="btn-primary">+ Tambah</button>
         <button id="logoutBtn" class="btn-ghost">Keluar</button>
         <div class="more-wrap">
@@ -165,6 +169,28 @@
     </div>
   </div>
 
+  <!-- Scan QR modal -->
+  <div id="scanModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" data-close-scan></div>
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2>Scan QR Code</h2>
+        <button class="icon-btn" data-close-scan aria-label="Tutup">×</button>
+      </div>
+      <div class="scan-stage">
+        <video id="scanVideo" playsinline muted autoplay></video>
+        <div id="scanStatus" class="scan-status muted">Tekan "Mulai Kamera" atau unggah gambar QR.</div>
+      </div>
+      <div class="scan-actions">
+        <button type="button" id="scanStartBtn" class="btn-primary">Mulai Kamera</button>
+        <button type="button" id="scanStopBtn" class="btn-ghost">Hentikan</button>
+        <label for="scanFile" class="btn-ghost file-btn">Unggah Gambar</label>
+        <input type="file" id="scanFile" accept="image/*" hidden />
+      </div>
+      <p class="hint">Arahkan kamera ke QR code <code>otpauth://</code>. Hasil scan akan mengisi form tambah akun.</p>
+    </div>
+  </div>
+
   <!-- Confirm modal -->
   <div id="confirmModal" class="modal hidden" role="dialog" aria-modal="true">
     <div class="modal-backdrop" data-close-confirm></div>
@@ -181,6 +207,7 @@
     </div>
   </div>
 
+  <script src="/vendor/jsqr.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>

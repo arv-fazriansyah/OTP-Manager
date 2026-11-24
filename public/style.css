@@ -421,6 +421,43 @@ textarea { resize: vertical; min-height: 72px; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
 .file-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
 
+/* Scan QR */
+.scan-btn { display: inline-flex; align-items: center; gap: 6px; }
+.scan-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  margin: 14px 0;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#scanVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+.scan-stage.active #scanVideo { display: block; }
+.scan-status {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  text-align: center;
+  backdrop-filter: blur(8px);
+}
+.scan-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
 /* Overflow menu (mobile only) */
 .more-wrap { position: relative; display: none; }
 .more-btn { font-size: 18px; line-height: 1; padding: 8px 10px; }
@@ -453,7 +490,7 @@ textarea { resize: vertical; min-height: 72px; }
 @media (max-width: 640px) {
   .topbar {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
     align-items: center;
     gap: 10px 8px;
     padding: 10px 14px;
@@ -461,11 +498,13 @@ textarea { resize: vertical; min-height: 72px; }
   .topbar-left { grid-column: 1 / 2; grid-row: 1; gap: 8px; min-width: 0; }
   .topbar-left h1 { font-size: 17px; }
   .topbar-right { display: contents; }
-  .more-wrap { display: block; grid-column: 2 / 3; grid-row: 1; justify-self: end; }
+  #scanBtn { grid-column: 2 / 3; grid-row: 1; padding: 9px 10px; }
+  #scanBtn .scan-label { display: none; }
+  .more-wrap { display: block; grid-column: 3 / 4; grid-row: 1; justify-self: end; }
   #searchInput { grid-column: 1 / -1; grid-row: 2; width: 100%; }
-  .cat-filter { grid-column: 1 / 2; grid-row: 3; min-width: 0; }
+  .cat-filter { grid-column: 1 / 3; grid-row: 3; min-width: 0; }
   .cat-filter-btn { width: 100%; }
-  #addBtn { grid-column: 2 / 3; grid-row: 3; white-space: nowrap; }
+  #addBtn { grid-column: 3 / 4; grid-row: 3; white-space: nowrap; }
   #themeBtn, #lockBtn, #importBtn, #exportBtn, #logoutBtn { display: none; }
   .topbar .btn-ghost, .topbar .btn-primary { padding: 9px 12px; }
   .container { padding: 14px 14px 40px; }
