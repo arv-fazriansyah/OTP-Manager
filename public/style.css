@@ -95,6 +95,7 @@ code { font-family: var(--font-mono); font-size: .9em; background: var(--surface
 .toast.show { transform: translate(-50%, 0); opacity: 1; }
 .toast.success { border-color: var(--success); }
 .toast.error { border-color: var(--danger); }
+.toast.info { border-color: var(--accent); }
 .toast::before {
   content: '';
   width: 20px;
@@ -111,6 +112,7 @@ code { font-family: var(--font-mono); font-size: .9em; background: var(--surface
 }
 .toast.success::before { content: '✓'; background: var(--success); color: #fff; }
 .toast.error::before { content: '✕'; background: var(--danger); color: #fff; }
+.toast.info::before { content: '→'; background: var(--accent); color: #fff; }
 
 /* Login */
 .login-shell {

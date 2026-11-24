@@ -115,7 +115,7 @@ $('#logoutBtn').addEventListener('click', async () => {
   await api('/api/logout', { method: 'POST' }).catch(() => {});
   stopTimer();
   showView('login');
-  toast('Sesi diakhiri');
+  toast('Sesi diakhiri', 'info');
 });
 
 /* ---------- Entries ---------- */
