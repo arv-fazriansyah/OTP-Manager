@@ -260,6 +260,8 @@ button { font-family: inherit; cursor: pointer; }
   transition: background .15s ease, border-color .15s ease;
 }
 .btn-ghost:hover { background: var(--surface-2); border-color: var(--border-strong); }
+.btn-icon { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.btn-icon svg { flex-shrink: 0; }
 .icon-btn {
   background: transparent;
   border: none;
@@ -507,7 +509,9 @@ textarea { resize: vertical; min-height: 72px; }
   z-index: 60;
 }
 .more-item {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   width: 100%;
   padding: 9px 12px;
   border: none;
@@ -515,9 +519,9 @@ textarea { resize: vertical; min-height: 72px; }
   background: transparent;
   color: var(--text);
   font-size: 14px;
-  text-align: left;
 }
 .more-item:hover { background: var(--surface-2); }
+.more-item svg { flex-shrink: 0; }
 
 /* Responsive */
 @media (max-width: 640px) {
