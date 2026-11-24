@@ -321,7 +321,6 @@ if (moreBtn && moreMenu) {
     if (!item) return;
     closeMoreMenu();
     const targets = {
-      lock: '#lockBtn',
       theme: '#themeBtn',
       import: '#importBtn',
       export: '#exportBtn',
@@ -679,7 +678,6 @@ function doLock() {
   showView('login');
   toast('Aplikasi dikunci', 'success');
 }
-$('#lockBtn').addEventListener('click', doLock);
 let lastActivity = Date.now();
 ['mousemove', 'keydown', 'click', 'touchstart', 'scroll'].forEach(ev => {
   window.addEventListener(ev, () => { lastActivity = Date.now(); }, { passive: true });

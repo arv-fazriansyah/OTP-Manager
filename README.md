@@ -27,7 +27,7 @@ Manajer kode OTP (TOTP) dua faktor berbasis **Cloudflare Workers** + **Cloudflar
 - Copy kode via ikon atau klik kode
 - Custom modal konfirmasi hapus
 - Toast modern (center-top)
-- Auto-lock setelah 5 menit idle + tombol Kunci
+- Auto-lock setelah 5 menit idle
 - Tema dark/light
 - Favicon
 

@@ -546,7 +546,7 @@ textarea { resize: vertical; min-height: 72px; }
   .cat-filter { grid-column: 1 / 2; grid-row: 3; min-width: 0; }
   .cat-filter-btn { width: 100%; }
   #addBtn { grid-column: 2 / 3; grid-row: 3; white-space: nowrap; }
-  #themeBtn, #lockBtn, #importBtn, #exportBtn, #logoutBtn { display: none; }
+  #themeBtn, #importBtn, #exportBtn, #logoutBtn { display: none; }
   .topbar .btn-ghost, .topbar .btn-primary { padding: 9px 12px; }
   .modal { padding: 14px; }
   .container { padding: 14px 14px 40px; }
