@@ -205,6 +205,13 @@
       </div>
       <div class="scan-stage">
         <video id="scanVideo" playsinline muted autoplay></video>
+        <div class="scan-overlay" aria-hidden="true">
+          <span class="scan-corner tl"></span>
+          <span class="scan-corner tr"></span>
+          <span class="scan-corner bl"></span>
+          <span class="scan-corner br"></span>
+          <div class="scan-line"></div>
+        </div>
         <div id="scanStatus" class="scan-status muted">Tekan "Mulai Kamera" atau unggah gambar QR.</div>
       </div>
       <div class="scan-actions">
@@ -213,7 +220,7 @@
         <label for="scanFile" class="btn-ghost file-btn" aria-label="Unggah gambar QR">Unggah</label>
         <input type="file" id="scanFile" accept="image/*" hidden />
       </div>
-      <p class="hint">Arahkan kamera ke QR code <code>otpauth://</code>. Hasil scan akan mengisi form tambah akun.</p>
+      <p class="hint">Arahkan kamera ke QR <code>otpauth://</code> atau QR ekspor Google Authenticator.</p>
     </div>
   </div>
 

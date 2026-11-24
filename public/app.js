@@ -542,6 +542,120 @@ function decodeCanvas(imageData) {
     return '';
   }
 }
+
+/* ---------- Migration QR (Google Authenticator) ---------- */
+function base32Encode(bytes) {
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  let value = 0, bits = 0, out = '';
+  for (let i = 0; i < bytes.length; i++) {
+    value = (value << 8) | bytes[i];
+    bits += 8;
+    while (bits >= 5) {
+      out += alphabet[(value >>> (bits - 5)) & 31];
+      bits -= 5;
+    }
+  }
+  if (bits > 0) out += alphabet[(value << (5 - bits)) & 31];
+  return out;
+}
+function readVarint(bytes, i) {
+  let result = 0, shift = 0;
+  const n = bytes.length;
+  while (i < n) {
+    const b = bytes[i++];
+    result += (b & 0x7f) * Math.pow(2, shift);
+    if ((b & 0x80) === 0) break;
+    shift += 7;
+  }
+  return [result, i];
+}
+function parseProto(bytes) {
+  const fields = {};
+  let i = 0;
+  const n = bytes.length;
+  while (i < n) {
+    const [tag, i1] = readVarint(bytes, i);
+    i = i1;
+    const field = tag >>> 3;
+    const wire = tag & 7;
+    if (wire === 0) {
+      const [val, i2] = readVarint(bytes, i);
+      i = i2;
+      (fields[field] ||= []).push({ val });
+    } else if (wire === 2) {
+      const [len, i2] = readVarint(bytes, i);
+      i = i2;
+      const sub = bytes.subarray(i, i + len);
+      i += len;
+      (fields[field] ||= []).push({ bytes: sub });
+    } else if (wire === 1) { i += 8; }
+    else if (wire === 5) { i += 4; }
+    else break;
+  }
+  return fields;
+}
+function parseMigrationAccounts(bytes) {
+  const top = parseProto(bytes);
+  const list = top[1] || [];
+  const algoMap = { 1: 'SHA1', 2: 'SHA256', 3: 'SHA512', 4: 'SHA1' };
+  return list.map(item => {
+    const f = parseProto(item.bytes);
+    const secret = base32Encode(f[1]?.[0]?.bytes || new Uint8Array());
+    const name = f[2]?.[0]?.bytes ? new TextDecoder().decode(f[2][0].bytes) : '';
+    const issuer = f[3]?.[0]?.bytes ? new TextDecoder().decode(f[3][0].bytes) : '';
+    const algorithm = algoMap[f[4]?.[0]?.val] || 'SHA1';
+    const digits = f[5]?.[0]?.val === 2 ? 8 : 6;
+    const type = f[6]?.[0]?.val === 1 ? 'hotp' : 'totp';
+    const counter = f[7]?.[0]?.val || 0;
+    return { secret, name, issuer, algorithm, digits, type, counter };
+  }).filter(a => a.secret);
+}
+function buildOtpAuthUri(a) {
+  const label = a.issuer ? `${a.issuer}:${a.name}` : a.name;
+  const params = new URLSearchParams();
+  params.set('secret', a.secret);
+  if (a.issuer) params.set('issuer', a.issuer);
+  params.set('algorithm', a.algorithm);
+  params.set('digits', String(a.digits));
+  if (a.type === 'hotp') params.set('counter', String(a.counter));
+  else params.set('period', '30');
+  return `otpauth://${a.type}/${encodeURIComponent(label)}?${params.toString()}`;
+}
+async function handleMigrationValue(value) {
+  setScanStatus('Membaca QR migrasi...');
+  let accounts;
+  try {
+    const qidx = value.indexOf('?');
+    const rawQuery = qidx >= 0 ? value.slice(qidx + 1) : '';
+    const m = /(?:^|&)data=([^&]*)/.exec(rawQuery);
+    if (!m) throw new Error('Parameter data tidak ada');
+    let b64 = decodeURIComponent(m[1]);
+    b64 = b64.replace(/-/g, '+').replace(/_/g, '/').replace(/\s/g, '');
+    while (b64.length % 4) b64 += '=';
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    accounts = parseMigrationAccounts(bytes);
+    if (!accounts.length) throw new Error('Tidak ada akun di dalam QR');
+  } catch (err) {
+    setScanStatus('QR migrasi tidak valid: ' + (err.message || 'gagal decode'));
+    toast('QR migrasi tidak valid', 'error');
+    return;
+  }
+  closeScanModal();
+  const text = accounts.map(buildOtpAuthUri).join('\n');
+  try {
+    const r = await api('/api/import', { method: 'POST', body: JSON.stringify({ text }) });
+    await loadEntries();
+    const parts = [];
+    if (r.added) parts.push(`${r.added} baru`);
+    if (r.updated) parts.push(`${r.updated} diperbarui`);
+    if (r.skipped) parts.push(`${r.skipped} dilewati`);
+    toast(`Import Google Authenticator: ${parts.join(', ') || 'tidak ada perubahan'}`, 'success');
+  } catch (err) {
+    toast(err.message || 'Gagal import', 'error');
+  }
+}
 async function decodeFrame(source, width, height) {
   if (scanDetector) {
     try {
@@ -651,9 +765,13 @@ async function scanImageFile(file) {
 }
 function handleScannedValue(value) {
   const v = String(value || '').trim();
+  if (/^otpauth-migration:\/\//i.test(v)) {
+    handleMigrationValue(v);
+    return;
+  }
   if (!/^otpauth:\/\//i.test(v)) {
-    setScanStatus('QR bukan format otpauth://. Gunakan QR dari aplikasi authenticator.');
-    toast('QR bukan format otpauth://', 'error');
+    setScanStatus('QR bukan format otpauth:// atau otpauth-migration://.');
+    toast('QR bukan format yang didukung', 'error');
     return;
   }
   closeScanModal();
