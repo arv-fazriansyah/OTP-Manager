@@ -172,7 +172,7 @@
   <!-- Scan QR modal -->
   <div id="scanModal" class="modal hidden" role="dialog" aria-modal="true">
     <div class="modal-backdrop" data-close-scan></div>
-    <div class="modal-card">
+    <div class="modal-card scan-card">
       <div class="modal-head">
         <h2>Scan QR Code</h2>
         <button class="icon-btn" data-close-scan aria-label="Tutup">×</button>
@@ -184,7 +184,7 @@
       <div class="scan-actions">
         <button type="button" id="scanStartBtn" class="btn-primary">Mulai Kamera</button>
         <button type="button" id="scanStopBtn" class="btn-ghost">Hentikan</button>
-        <label for="scanFile" class="btn-ghost file-btn">Unggah Gambar</label>
+        <label for="scanFile" class="btn-ghost file-btn" aria-label="Unggah gambar QR">Unggah</label>
         <input type="file" id="scanFile" accept="image/*" hidden />
       </div>
       <p class="hint">Arahkan kamera ke QR code <code>otpauth://</code>. Hasil scan akan mengisi form tambah akun.</p>

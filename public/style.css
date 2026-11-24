@@ -270,7 +270,16 @@ button { font-family: inherit; cursor: pointer; }
   border-radius: 6px;
 }
 .icon-btn:hover { background: var(--surface-2); color: var(--text); }
-.file-btn { display: inline-flex; align-items: center; cursor: pointer; }
+.file-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+}
 
 /* Forms */
 label { display: block; font-size: 13px; font-weight: 500; color: var(--muted); margin: 14px 0 6px; }
@@ -427,7 +436,8 @@ textarea { resize: vertical; min-height: 72px; }
   position: relative;
   width: 100%;
   aspect-ratio: 4 / 3;
-  margin: 14px 0;
+  max-height: 190px;
+  margin: 12px 0;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--surface-2);
@@ -456,7 +466,29 @@ textarea { resize: vertical; min-height: 72px; }
   text-align: center;
   backdrop-filter: blur(8px);
 }
-.scan-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.scan-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.scan-actions .btn-primary,
+.scan-actions .btn-ghost,
+.scan-actions .file-btn {
+  width: 100%;
+  margin: 0;
+  padding: 9px 8px;
+  font-size: 13px;
+  justify-content: center;
+  white-space: nowrap;
+}
+.scan-actions .file-btn {
+  color: var(--text);
+  font-weight: 500;
+}
+.modal-card.scan-card {
+  max-width: 420px;
+  padding: 20px;
+}
 
 /* Overflow menu (mobile only) */
 .more-wrap { position: relative; display: none; }
@@ -507,12 +539,19 @@ textarea { resize: vertical; min-height: 72px; }
   #addBtn { grid-column: 3 / 4; grid-row: 3; white-space: nowrap; }
   #themeBtn, #lockBtn, #importBtn, #exportBtn, #logoutBtn { display: none; }
   .topbar .btn-ghost, .topbar .btn-primary { padding: 9px 12px; }
+  .modal { padding: 14px; }
   .container { padding: 14px 14px 40px; }
   .grid { gap: 12px; }
   .otp-card { padding: 16px; }
   .search { font-size: 16px; }
   .form-grid, .form-grid.three { grid-template-columns: 1fr; }
   .code { font-size: 28px; letter-spacing: 4px; }
+}
+@media (max-width: 480px) {
+  .scan-actions { grid-template-columns: 1fr 1fr; }
+  .scan-actions .file-btn { grid-column: 1 / -1; }
+  .modal-card.scan-card { padding: 18px; }
+  .scan-stage { max-height: 180px; }
 }
 .otp-card.pinned { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
 .otp-card.pinned [data-pin] { color: var(--accent); }
